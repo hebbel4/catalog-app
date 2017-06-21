@@ -1,0 +1,26 @@
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel=stylesheet type=text/css href="{{ url_for('static', filename='style.css') }}">
+    <meta charset="utf-8">
+    <title>Catalog App</title>
+</head>
+<body>
+    <div class="header">
+        <div class="app_name">
+            <h1>Catalog App</h1>
+        </div>
+        <div class="login">
+            <h3>Login</h3>
+        </div>
+    </div>
+    <div class="main_area">
+        <div class="center_area">
+            <h2>{{item.title}}</h2>
+            <p>{{item.description}}</p>
+        </div>
+    </div>
+
+</body>
+
+</html>

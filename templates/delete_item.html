@@ -1,0 +1,34 @@
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel=stylesheet type=text/css href="{{ url_for('static', filename='style.css') }}">
+    <meta charset="utf-8">
+    <title>Catalog App</title>
+</head>
+<body>
+    <div class="header">
+        <div class="app_name">
+            <h1>Catalog App</h1>
+        </div>
+        <div class="logout">
+            <h3>Logout</h3>
+        </div>
+    </div>
+    <div class="main_area">
+        <div class="info_center_area">
+            <h2>Delete Item</h2>
+            <p class="items">Are you sure you want to delete {{item_name}}?</p>
+            <form action='{{ url_for('delete_item',item_name = item_name)}}' method = 'post'>
+
+            <input type='submit', value = 'Delete'>
+            <a href ='{{ url_for('display_login')}}'>Cancel</a>
+            </form>
+
+
+
+        </div>
+    </div>
+
+</body>
+
+</html>

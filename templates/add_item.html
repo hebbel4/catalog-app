@@ -1,0 +1,48 @@
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel=stylesheet type=text/css href="{{ url_for('static', filename='style.css') }}">
+    <meta charset="utf-8">
+    <title>Catalog App</title>
+</head>
+<body>
+    <div class="header">
+        <div class="app_name">
+            <h1>Catalog App</h1>
+        </div>
+        <div class="logout">
+            <h3>Logout</h3>
+        </div>
+    </div>
+    <div class="main_area">
+        <div class="info_center_area">
+            <h2>Add Item</h2>
+            <form action="{{ url_for('add_item') }}" method='post'>
+
+                <label class="edit">Title</label><br>
+                <input type='text' size='20' name='title'>
+                <br><br>
+
+                <label class="edit">Description</label><br>
+                <input type='text' size='30' name='description'>
+                <br><br>
+
+                <label class="edit">Category</label><br>
+                <select name="genre">
+                    <option value="Comedy">Comedy</option>
+                    <option value="Romance">Romance</option>
+                    <option value="Action&Adventure">Action&amp;Adventure</option>
+                </select>
+                <br><br>
+
+                <input type='submit' value='Submit'>
+                <a href='{{url_for('display_login')}}'>Cancel</a>
+            </form>
+
+
+        </div>
+    </div>
+
+</body>
+
+</html>

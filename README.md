@@ -11,4 +11,4 @@ This catalog web app allows users to create, read, update and delete items. To b
 * Inside the VM, change directory to \vagrant (cd \vagrant), and then cd catalog
 * Download and run command python catalog_init.py to populate database with movies
 * Run command python application.py
-* Open a browser and enter localhost://8000
+* Open a browser and enter localhost:8000

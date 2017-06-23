@@ -13,8 +13,7 @@
             <h1>Catalog App</h1>
         </div>
         <div class="login">
-            <h3>Login</h3>
-             <div id="signInButton">
+            <div id="signInButton">
               <span class="g-signin"
                 data-scope="openid email"
                 data-clientid="161792722750-m9788p36575f4euout2hhv3vr05o4lhd.apps.googleusercontent.com"
@@ -44,8 +43,8 @@
                     if (result) {
                       $('#result').html('Login Successful!</br>'+ result + '</br>Redirecting...')
                      setTimeout(function() {
-                      window.location.href = "/restaurant";
-                     }, 4000);
+                      window.location.href = "/login";
+                     }, 3000);
 
                   } else if (authResult['error']) {
                 console.log('There was an error: ' + authResult['error']);
@@ -69,7 +68,7 @@
                 <div>
 
                     <p>
-                    <a href='{{url_for('show_items', category_name = category.name)
+                    <a class="cats" href='{{url_for('show_items', category_name = category.name)
                     }}'>{{category.name}}</a>
                     </p>
 

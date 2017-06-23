@@ -56,6 +56,7 @@ def show_info(category_name, item_name):
 
 @app.route('/gconnect', methods=['POST'])
 def gconnect():
+    
     # Validate state token
     if request.args.get('state') != login_session['state']:
         response = make_response(json.dumps('Invalid state parameter.'), 401)
@@ -63,7 +64,7 @@ def gconnect():
         return response
     # Obtain authorization code
     code = request.data
-
+    
     try:
         # Upgrade the authorization code into a credentials object
         oauth_flow = flow_from_clientsecrets('client_secrets.json', scope='')
@@ -94,7 +95,7 @@ def gconnect():
             json.dumps("Token's user ID doesn't match given user ID."), 401)
         response.headers['Content-Type'] = 'application/json'
         return response
-
+    
     # Verify that the access token is valid for this app.
     if result['issued_to'] != CLIENT_ID:
         response = make_response(
@@ -102,19 +103,20 @@ def gconnect():
         print "Token's client ID does not match app's."
         response.headers['Content-Type'] = 'application/json'
         return response
-
+   
     stored_credentials = login_session.get('credentials')
     stored_gplus_id = login_session.get('gplus_id')
     if stored_credentials is not None and gplus_id == stored_gplus_id:
+        print "shabi!!!"
         response = make_response(json.dumps('Current user is already connected.'),
                                  200)
         response.headers['Content-Type'] = 'application/json'
         return response
-
+    
     # Store the access token in the session for later use.
     login_session['credentials'] = credentials
     login_session['gplus_id'] = gplus_id
-
+    
     # Get user info
     userinfo_url = "https://www.googleapis.com/oauth2/v1/userinfo"
     params = {'access_token': credentials.access_token, 'alt': 'json'}
@@ -127,9 +129,9 @@ def gconnect():
     login_session['email'] = data['email']
 
     output = ''
-    output += '<h1>Welcome, '
+    output += '<h2>Welcome, '
     output += login_session['username']
-    output += '!</h1>'
+    output += '!</h2>'
     output += '<img src="'
     output += login_session['picture']
     output += ' " style = "width: 300px; height: 300px;border-radius: 150px;-webkit-border-radius: 150px;-moz-border-radius: 150px;"> '
@@ -139,6 +141,33 @@ def gconnect():
 
 @app.route('/gdisconnect')
 def gdisconnect():
+    '''
+    credentials = login_session.get('credentials')
+    if credentials is None:
+        response = make_response(json.dumps('Current user not connected.'), 401)
+    	response.headers['Content-Type'] = 'application/json'
+    	return response
+    access_token = credentials.access_token
+    url = 'https://accounts.google.com/o/oauth2/revoke?token=%s' % login_session.get('access_token')
+    h = httplib2.Http()
+    result = h.request(url, 'GET')[0]
+    print 'result is '
+    print result
+    if result['status'] == '200':
+	del login_session['access_token'] 
+    	del login_session['gplus_id']
+    	del login_session['username']
+    	del login_session['email']
+    	del login_session['picture']
+    	response = make_response(json.dumps('Successfully disconnected.'), 200)
+    	response.headers['Content-Type'] = 'application/json'
+    	return response
+    else:
+	
+    	response = make_response(json.dumps('Failed to revoke token for given user.', 400))
+    	response.headers['Content-Type'] = 'application/json'
+    	return response
+    '''
     access_token = login_session['access_token']
     print 'In gdisconnect access token is %s', access_token
     print 'User name is: ' 
@@ -167,7 +196,7 @@ def gdisconnect():
     	response = make_response(json.dumps('Failed to revoke token for given user.', 400))
     	response.headers['Content-Type'] = 'application/json'
     	return response
-
+    
 # display after login
 @app.route('/')
 def display_login():
@@ -182,6 +211,8 @@ def display_login():
 # add an item
 @app.route('/catalog/add/', methods=['GET', 'POST'])
 def add_item():
+    if 'username' not in login_session:
+        return redirect('/')
     if request.method == 'POST':
         category_name = request.form['genre']
         category = session.query(Category).filter_by(name = str(category_name)\
@@ -214,6 +245,8 @@ def show_info_login(category_name, item_name):
 # edit item after login
 @app.route('/catalog/<string:item_name>/edit/', methods=['GET', 'POST'])
 def edit_item(item_name):
+    if 'username' not in login_session:
+        return redirect('/')
     item = session.query(Item).filter_by(title = item_name).one()
     if request.method == 'POST':
         if request.form['title']:
@@ -234,6 +267,8 @@ def edit_item(item_name):
 # delete item after login
 @app.route('/catalog/<string:item_name>/delete/', methods=['GET', 'POST'])
 def delete_item(item_name):
+    if 'username' not in login_session:
+        return redirect('/')
     item = session.query(Item).filter_by(title = item_name).one()
     if request.method == 'POST':
         session.delete(item)
@@ -269,7 +304,7 @@ def static_file_hash(filename):
 
 # my API endpoint
 @app.route('/catalog.json')
-def json():
+def json_func():
     items = session.query(Item).all()
     return jsonify(Items=[i.serialize for i in items])
 

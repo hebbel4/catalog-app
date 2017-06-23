@@ -24,7 +24,7 @@
                 <div>
 
                     <p>
-                    <a class="cats" href='{{url_for('show_items_login', category_name = category.name)
+                    <a class="cats" href='{{url_for('show_items', category_name = category.name)
                     }}'>{{category.name}}</a>
                     </p>
 
@@ -40,7 +40,7 @@
                 <div>
 
                     <p>
-                    <a class="items" href='{{url_for('show_info_login', category_name = category_name, item_name = item.title)
+                    <a class="items" href='{{url_for('show_info', category_name = category_name, item_name = item.title)
                     }}'>{{item.title}}</a>
                     </p>
 

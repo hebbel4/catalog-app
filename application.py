@@ -2,7 +2,7 @@ from flask import Flask, render_template, request, redirect, url_for, flash
 from flask import jsonify
 from sqlalchemy import create_engine, asc
 from sqlalchemy.orm import sessionmaker
-from db_setup import Base, Category, Item
+from db_setup import Base, Category, Item, User
 import os
 from flask import session as login_session
 import random
@@ -28,6 +28,40 @@ DBSession = sessionmaker(bind=engine)
 session = DBSession()
 
 
+# a helper function to check user login
+def login_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if 'username' in login_session:
+            return f(*args, **kwargs)
+        else:
+            flash("You are not allowed to access there")
+            return redirect('/')
+    return decorated_function
+
+
+def createUser(login_session):
+    newUser = User(name=login_session['username'], email=login_session[
+                   'email'], picture=login_session['picture'])
+    session.add(newUser)
+    session.commit()
+    user = session.query(User).filter_by(email=login_session['email']).one()
+    return user.id
+
+
+def getUserInfo(user_id):
+    user = session.query(User).filter_by(id=user_id).one()
+    return user
+
+
+def getUserID(email):
+    try:
+        user = session.query(User).filter_by(email=email).one()
+        return user.id
+    except:
+        return None
+
+    
 # displays the initial website
 @app.route('/')
 def display_all():
@@ -36,8 +70,24 @@ def display_all():
     login_session['state'] = state
     categories = session.query(Category).all()
     items = session.query(Item).order_by(Item.id.desc()).all()
-    return render_template('display_all.html', categories=categories,
-                           items=items, STATE=state)
+    if 'username' not in login_session:
+        return render_template('display_all.html', categories=categories,
+                               items=items, STATE=state)
+    else:
+        return render_template('display_login.html', categories=categories,
+                               items=items)
+    
+
+'''
+# display after login
+@app.route('/login')
+def display_login():
+    state = ''.join(random.choice(string.ascii_uppercase + string.digits)
+                    for x in xrange(32))
+    login_session['state'] = state
+    categories = session.query(Category).all()
+    items = session.query(Item).order_by(Item.id.desc()).all()
+    '''
 
 
 # show items for each category
@@ -49,10 +99,25 @@ def show_items(category_name):
     categories = session.query(Category).all()
     curr_category = session.query(Category).filter_by(name=category_name).one()
     items = session.query(Item).filter_by(category=curr_category)
-    return render_template('show_items.html', categories=categories,
-                           items=items, category_name=category_name,
-                           STATE=state)
+    if 'username' not in login_session:
+        return render_template('show_items.html', categories=categories,
+                               items=items, category_name=category_name,
+                               STATE=state)
+    else:
+        return render_template('show_items_login.html', categories=categories,
+                               items=items, category_name=category_name)
 
+'''
+# show items after login
+@login_required
+@app.route('/catalog/<string:category_name>/items/login')
+def show_items_login(category_name):
+    categories = session.query(Category).all()
+    curr_category = session.query(Category).filter_by(name=category_name).one()
+    items = session.query(Item).filter_by(category=curr_category)
+    return render_template('show_items_login.html', categories=categories,
+                           items=items, category_name=category_name)
+'''
 
 # show description of item
 @app.route('/catalog/<string:category_name>/<string:item_name>/')
@@ -61,8 +126,25 @@ def show_info(category_name, item_name):
                     for x in xrange(32))
     login_session['state'] = state
     item = session.query(Item).filter_by(title=item_name).one()
-    return render_template('show_info.html', item=item, STATE=state)
+    creator = getUserInfo(item.user_id)
+    if 'username' not in login_session:
+        return render_template('show_info.html', item=item, STATE=state,
+                               creator=creator)
+    elif creator.id != login_session['user_id']:
+        return render_template('show_info_notcreate.html', item=item,
+                               creator=creator)
+    else:
+        return render_template('show_info_login.html', item=item,
+                               creator=creator)
 
+'''
+# show description of item after login
+@login_required
+@app.route('/catalog/<string:category_name>/<string:item_name>/login')
+def show_info_login(category_name, item_name):
+    item = session.query(Item).filter_by(title=item_name).one()
+    return render_template('show_info_login.html', item=item)
+'''
 
 @app.route('/gconnect', methods=['POST'])
 def gconnect():
@@ -111,7 +193,6 @@ def gconnect():
     stored_credentials = login_session.get('credentials')
     stored_gplus_id = login_session.get('gplus_id')
     if stored_credentials is not None and gplus_id == stored_gplus_id:
-        print "shabi!!!"
         response = make_response(
             json.dumps('Current user is already connected.'), 200)
         response.headers['Content-Type'] = 'application/json'
@@ -127,6 +208,13 @@ def gconnect():
     login_session['username'] = data['name']
     login_session['picture'] = data['picture']
     login_session['email'] = data['email']
+
+    # see if user exists, if doesn't make a new one
+    user_id = getUserID(login_session['email'])
+    if not user_id:
+        user_id = createUser(login_session)
+    login_session['user_id'] = user_id
+
     output = ''
     output += '<h3>Welcome, '
     output += login_session['username']
@@ -152,8 +240,7 @@ def gdisconnect():
             json.dumps('Current user not connected.'), 401)
         response.headers['Content-Type'] = 'application/json'
         return response
-    url = 'https://accounts.google.com/o/oauth2/revoke?token=%s'
-    % login_session['access_token']
+    url = 'https://accounts.google.com/o/oauth2/revoke?token=%s' % access_token
     h = httplib2.Http()
     result = h.request(url, 'GET')[0]
     print 'result is '
@@ -174,70 +261,26 @@ def gdisconnect():
         return response
 
 
-# a helper function to check user login
-def login_required(f):
-    @wraps(f)
-    def decorated_function(*args, **kwargs):
-        if 'username' in login_session:
-            return f(*args, **kwargs)
-        else:
-            flash("You are not allowed to access there")
-            return redirect('/')
-    return decorated_function
-
-
-# display after login
-@app.route('/login')
-def display_login():
-    state = ''.join(random.choice(string.ascii_uppercase + string.digits)
-                    for x in xrange(32))
-    login_session['state'] = state
-    categories = session.query(Category).all()
-    items = session.query(Item).order_by(Item.id.desc()).all()
-    return render_template('display_login.html', categories=categories,
-                           items=items, STATE=state)
-
-
 # add an item
-@login_required
 @app.route('/catalog/add/', methods=['GET', 'POST'])
 def add_item():
     if request.method == 'POST':
+        user = getUserInfo(login_session['user_id'])
         category_name = request.form['genre']
-        category = session.query(Category).filter_by
-        (name=str(category_name)).one()
+        category = session.query(Category).filter_by(name=str(category_name)).one()
         newItem = Item(title=request.form['title'],
                        description=request.form['description'],
-                       category=category)
+                       category=category, user_id=login_session['user_id'],
+                       user=user)
         session.add(newItem)
         session.commit()
         flash("New item created!")
-        return redirect(url_for('display_login'))
+        return redirect(url_for('display_all'))
     else:
         return render_template('add_item.html')
 
 
-# show items after login
-@login_required
-@app.route('/catalog/<string:category_name>/items/login')
-def show_items_login(category_name):
-    categories = session.query(Category).all()
-    curr_category = session.query(Category).filter_by(name=category_name).one()
-    items = session.query(Item).filter_by(category=curr_category)
-    return render_template('show_items_login.html', categories=categories,
-                           items=items, category_name=category_name)
-
-
-# show description of item after login
-@login_required
-@app.route('/catalog/<string:category_name>/<string:item_name>/login')
-def show_info_login(category_name, item_name):
-    item = session.query(Item).filter_by(title=item_name).one()
-    return render_template('show_info_login.html', item=item)
-
-
 # edit item after login
-@login_required
 @app.route('/catalog/<string:item_name>/edit/', methods=['GET', 'POST'])
 def edit_item(item_name):
     item = session.query(Item).filter_by(title=item_name).one()
@@ -259,7 +302,6 @@ def edit_item(item_name):
 
 
 # delete item after login
-@login_required
 @app.route('/catalog/<string:item_name>/delete/', methods=['GET', 'POST'])
 def delete_item(item_name):
     item = session.query(Item).filter_by(title=item_name).one()

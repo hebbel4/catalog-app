@@ -43,7 +43,7 @@
                     if (result) {
                       $('#result').html('Login Successful!</br>'+ result + '</br>Redirecting...')
                      setTimeout(function() {
-                      window.location.href = "/login";
+                      window.location.href = "/catalog/{{item.category.name}}/{{item.title}}";
                      }, 3000);
 
                   } else if (authResult['error']) {
@@ -59,7 +59,7 @@
     </div>
     <div class="main_area">
         <div class="info_center_area">
-            <h2>{{item.title}}</h2>
+            <h2>{{item.title}} --- Creator: {{creator.name}}</h2>
             <p class="items">{{item.description}}</p>
         </div>
     </div>

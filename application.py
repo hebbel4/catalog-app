@@ -14,6 +14,7 @@ import json
 from flask import make_response
 import requests
 from functools import wraps
+import random
 
 app = Flask(__name__)
 
@@ -344,8 +345,9 @@ def static_file_hash(filename):
 # my API endpoint
 @app.route('/catalog.json')
 def json_func():
-    items = session.query(Item).all()
-    return jsonify(Items=[i.serialize for i in items])
+    rand = random.randrange(0, session.query(Item).count()) 
+    ran_item = session.query(Item)[rand]
+    return jsonify(ran_item.serialize)
 
 
 if __name__ == '__main__':

@@ -66,6 +66,7 @@ def getUserID(email):
 # displays the initial website
 @app.route('/')
 def display_all():
+    #login_session.clear()
     state = ''.join(random.choice(string.ascii_uppercase + string.digits)
                     for x in xrange(32))
     login_session['state'] = state
@@ -75,20 +76,9 @@ def display_all():
         return render_template('display_all.html', categories=categories,
                                items=items, STATE=state)
     else:
+        print login_session['email']
         return render_template('display_login.html', categories=categories,
                                items=items)
-    
-
-'''
-# display after login
-@app.route('/login')
-def display_login():
-    state = ''.join(random.choice(string.ascii_uppercase + string.digits)
-                    for x in xrange(32))
-    login_session['state'] = state
-    categories = session.query(Category).all()
-    items = session.query(Item).order_by(Item.id.desc()).all()
-    '''
 
 
 # show items for each category
@@ -108,17 +98,6 @@ def show_items(category_name):
         return render_template('show_items_login.html', categories=categories,
                                items=items, category_name=category_name)
 
-'''
-# show items after login
-@login_required
-@app.route('/catalog/<string:category_name>/items/login')
-def show_items_login(category_name):
-    categories = session.query(Category).all()
-    curr_category = session.query(Category).filter_by(name=category_name).one()
-    items = session.query(Item).filter_by(category=curr_category)
-    return render_template('show_items_login.html', categories=categories,
-                           items=items, category_name=category_name)
-'''
 
 # show description of item
 @app.route('/catalog/<string:category_name>/<string:item_name>/')
@@ -126,7 +105,9 @@ def show_info(category_name, item_name):
     state = ''.join(random.choice(string.ascii_uppercase + string.digits)
                     for x in xrange(32))
     login_session['state'] = state
-    item = session.query(Item).filter_by(title=item_name).one()
+    item = session.query(Item).filter_by(title=item_name).one_or_none()
+    if item is None:
+        return render_template('404_error.html')
     creator = getUserInfo(item.user_id)
     if 'username' not in login_session:
         return render_template('show_info.html', item=item, STATE=state,
@@ -138,14 +119,6 @@ def show_info(category_name, item_name):
         return render_template('show_info_login.html', item=item,
                                creator=creator)
 
-'''
-# show description of item after login
-@login_required
-@app.route('/catalog/<string:category_name>/<string:item_name>/login')
-def show_info_login(category_name, item_name):
-    item = session.query(Item).filter_by(title=item_name).one()
-    return render_template('show_info_login.html', item=item)
-'''
 
 @app.route('/gconnect', methods=['POST'])
 def gconnect():
@@ -263,6 +236,7 @@ def gdisconnect():
 
 
 # add an item
+@login_required
 @app.route('/catalog/add/', methods=['GET', 'POST'])
 def add_item():
     if request.method == 'POST':
@@ -282,37 +256,45 @@ def add_item():
 
 
 # edit item after login
+@login_required
 @app.route('/catalog/<string:item_name>/edit/', methods=['GET', 'POST'])
 def edit_item(item_name):
     item = session.query(Item).filter_by(title=item_name).one()
-    if request.method == 'POST':
-        if request.form['title']:
-            item.title = request.form['title']
-        if request.form['description']:
-            item.description = request.form['description']
-        category_name = request.form['genre']
-        category = session.query(Category).filter_by(name=str(category_name)
-                                                     ).one()
-        item.category = category
-        session.add(item)
-        session.commit()
-        flash("Item has been edited.")
-        return redirect(url_for('display_login'))
+    if item.user_id == login_session['user_id']:
+        if request.method == 'POST':
+            if request.form['title']:
+                item.title = request.form['title']
+            if request.form['description']:
+                item.description = request.form['description']
+            category_name = request.form['genre']
+            category = session.query(Category).filter_by(name=str(category_name)
+                                                         ).one()
+            item.category = category
+            session.add(item)
+            session.commit()
+            flash("Item has been edited.")
+            return redirect(url_for('display_all'))
+        else:
+            return render_template('edit_item.html', item_name=item.title)
     else:
-        return render_template('edit_item.html', item_name=item.title)
+        redirect(url_for('display_all'))
 
 
 # delete item after login
+@login_required
 @app.route('/catalog/<string:item_name>/delete/', methods=['GET', 'POST'])
 def delete_item(item_name):
     item = session.query(Item).filter_by(title=item_name).one()
-    if request.method == 'POST':
-        session.delete(item)
-        session.commit()
-        flash("Item has been deleted.")
-        return redirect(url_for('display_login'))
+    if item.user_id == login_session['user_id']:
+        if request.method == 'POST':
+            session.delete(item)
+            session.commit()
+            flash("Item has been deleted.")
+            return redirect(url_for('display_all'))
+        else:
+            return render_template('delete_item.html', item_name=item.title)
     else:
-        return render_template('delete_item.html', item_name=item.title)
+        redirect(url_for('display_all'))
 
 
 # deal with browser cache problem regarding to css file
@@ -345,9 +327,22 @@ def static_file_hash(filename):
 # my API endpoint
 @app.route('/catalog.json')
 def json_func():
-    rand = random.randrange(0, session.query(Item).count()) 
+    rand = random.randrange(0, session.query(Item).count())
     ran_item = session.query(Item)[rand]
     return jsonify(ran_item.serialize)
+
+
+@app.route('/catalog.json/all_items/')
+def json_all_items():
+    items = session.query(Item).all()
+    return jsonify(items=[i.serialize for i in items])
+
+
+@app.route('/catalog.json/category/')
+def json_category():
+    rand = random.randrange(0, session.query(Category).count())
+    rand_cat = session.query(Category)[rand]
+    return jsonify(rand_cat.serialize)
 
 
 if __name__ == '__main__':

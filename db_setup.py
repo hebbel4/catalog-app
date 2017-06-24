@@ -26,6 +26,13 @@ class Category(Base):
     name = Column(String(80), nullable=False)
     id = Column(Integer, primary_key=True)
 
+    @property
+    def serialize(self):
+        return {
+            'name': self.name,
+            'id': self.id,
+        }
+
 
 class Item(Base):
     __tablename__ = 'item'
@@ -33,8 +40,7 @@ class Item(Base):
     description = Column(String(1000), nullable=False)
     id = Column(Integer, primary_key=True)
     title = Column(String(80), nullable=False)
-    category = relationship(Category, cascade="all, delete-orphan",
-                            single_parent=True)
+    category = relationship(Category)
     user_id = Column(Integer, ForeignKey('user.id'))
     user = relationship(User)
     
@@ -45,6 +51,7 @@ class Item(Base):
             'description': self.description,
             'id': self.id,
         }
+
 
 engine = create_engine('sqlite:///catalog.db')
 Base.metadata.create_all(engine)

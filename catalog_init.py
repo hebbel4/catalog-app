@@ -98,4 +98,50 @@ item2 = Item(title="Wonder Woman", description="An Amazon princess \
 session.add(item2)
 session.commit()
 
+# fourth category
+category4 = Category(name="Horror")
+
+session.add(category4)
+session.commit()
+
+item1 = Item(title="The Dark Tower", description="The Gunslinger, Roland \
+        Deschain, roams an Old West-like landscape where \"the world has \
+        moved on\" in pursuit of the man in black. Also searching for the \
+        fabled Dark Tower, in the hopes that reaching it will preserve his \
+        dying world.", category=category4, user=User1)
+
+session.add(item1)
+session.commit()
+
+item2 = Item(title="Get Out", description="It's time for a young African \
+        American to meet with his white girlfriend's parents for a weekend \
+        in their secluded estate in the woods, but before long, the friendly \
+        and polite ambience will give way to a nightmare.", category=category4,
+             user=User1)
+
+session.add(item2)
+session.commit()
+
+# fifth category
+category5 = Category(name="Drama")
+
+session.add(category5)
+session.commit()
+
+item1 = Item(title="War for the Planet of the Apes", description="After the \
+        apes suffer unimaginable losses, Caesar wrestles with his darker \
+        instincts and begins his own mythic quest to avenge his \
+        kind.", category=category5, user=User1)
+
+session.add(item1)
+session.commit()
+
+item2 = Item(title="Dunkirk", description="Allied soldiers from Belgium, \
+        the British Empire and France are surrounded by the German army and \
+        evacuated during a fierce battle in World War II.", category=category5,
+             user=User1)
+
+session.add(item2)
+session.commit()
+
 print "added category items!"

@@ -4,6 +4,8 @@ This catalog web app allows users to create, read, update and delete items. To b
 
 **This project makes use of the Linux-based virtual machine (VM), you'll need VirtualBox, Vagrant installed in advance.**
 
+https://user-images.githubusercontent.com/20274213/28523102-e3bb429a-7048-11e7-91cd-7f6926a27524.png
+
 ## Start Guide:
 * Put all files into a folder "catalog" inside vagrant subdirectory
 * From your terminal, inside the vagrant subdirectory, run the command vagrant up

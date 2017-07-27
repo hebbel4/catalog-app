@@ -1,6 +1,6 @@
 # movie-catalog-app
 
-This catalog web app allows users to create, read, update and delete items. To be more specific, users can log in with their Google account, add movies in a specific category to the database, edit the information of the movies and can also delete the movie they added. Users can only modify the movies which are created by themselves. 
+This catalog web app allows users to create, read, update and delete items. To be more specific, users can log in with their Google or Facebook account, add movies in a specific category to the database, edit the information of the movies and can also delete the movie they added. Users can only modify the movies which are created by themselves. 
 
 **This project makes use of the Linux-based virtual machine (VM), you'll need VirtualBox, Vagrant installed in advance.**
 

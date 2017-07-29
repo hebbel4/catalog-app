@@ -11,7 +11,7 @@
             <h1>Catalog App</h1>
         </div>
         <div class="logout">
-            <a class="logout_logo" href='{{url_for('disconnect')
+            <a class="logout_logo" href='{{url_for('users.disconnect')
             }}'>Logout</a>
         </div>
     </div>
@@ -19,10 +19,10 @@
         <div class="info_center_area">
             <h2>Delete Item</h2>
             <p class="items">Are you sure you want to delete {{item_name}}?</p>
-            <form action='{{ url_for('delete_item',item_name = item_name)}}' method = 'post'>
+            <form action='{{ url_for('items.delete_item',item_name = item_name)}}' method = 'post'>
 
             <input type='submit', value = 'Delete'>
-            <a href ='{{ url_for('display_all')}}'>Cancel</a>
+            <a href ='{{ url_for('users.display_all')}}'>Cancel</a>
             </form>
 
 

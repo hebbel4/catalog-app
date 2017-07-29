@@ -11,14 +11,14 @@
             <h1>Catalog App</h1>
         </div>
         <div class="logout">
-            <a class="logout_logo" href='{{url_for('disconnect')
+            <a class="logout_logo" href='{{url_for('users.disconnect')
             }}'>Logout</a>
         </div>
     </div>
     <div class="main_area">
         <div class="info_center_area">
             <h2>Edit Item</h2>
-            <form action="{{ url_for('edit_item', item_name = item_name) }}" method='post'>
+            <form action="{{ url_for('items.edit_item', item_name = item_name) }}" method='post'>
 
                 <label class="edit">Title</label><br>
                 <input type='text' size='20' name='title' placeholder='{{item_name}}'>
@@ -39,7 +39,7 @@
                 <br><br>
 
                 <input type='submit' value='Edit'>
-                <a href='{{url_for('display_all')}}'>Cancel</a>
+                <a href='{{url_for('users.display_all')}}'>Cancel</a>
             </form>
 
 

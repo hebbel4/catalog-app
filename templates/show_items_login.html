@@ -11,7 +11,7 @@
             <h1>Catalog App</h1>
         </div>
         <div class="logout">
-            <a class="logout_logo" href='{{url_for('disconnect')
+            <a class="logout_logo" href='{{url_for('users.disconnect')
             }}'>Logout</a>
         </div>
     </div>
@@ -24,7 +24,7 @@
                 <div>
 
                     <p>
-                    <a class="cats" href='{{url_for('show_items', category_name = category.name)
+                    <a class="cats" href='{{url_for('users.show_items', category_name = category.name)
                     }}'>{{category.name}}</a>
                     </p>
 
@@ -40,7 +40,7 @@
                 <div>
 
                     <p>
-                    <a class="items" href='{{url_for('show_info', category_name = category_name, item_name = item.title)
+                    <a class="items" href='{{url_for('users.show_info', category_name = category_name, item_name = item.title)
                     }}'>{{item.title}}</a>
                     </p>
 

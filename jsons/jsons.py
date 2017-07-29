@@ -3,6 +3,7 @@ from flask import jsonify
 from flask import Blueprint
 from db_setup import Base, Category, Item, User
 import random
+from database import session
 
 
 # Define the Blueprint
